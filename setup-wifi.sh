@@ -8,7 +8,7 @@
 # Set Vars:
   SSID="$1"            # Wifi SSID
   PSWD="$2"            # Wifi PSWD
-  LOGX="wifi.log"      # Install log
+  LOGX="/var/log/justice/wifi.log"      # Install log
   CRED="wifi-creds"    # SSID/PSWD file
   HDIR="/etc/network"  # Install home dir
   SCPT="setup-wifi.sh" # Script name
@@ -16,11 +16,12 @@
 
 # Log cleanup:
   lcl_f() {
-    if   [ -e "${HDIR}/${LOGX}" ]; then rm "${HDIR}/${LOGX}"; fi
+    mkdir -p $(dirname ${LOGX})
+    rm -f ${LOGX}
   }
 
 # Pipe to log:
-  ptl_f(){ tee -a "${HDIR}/${LOGX}"; }
+  ptl_f(){ tee -a ${LOGX}; }
 
 # User input (SSID/PSWD): -------------------------------------------------------------------------
   set_f(){
