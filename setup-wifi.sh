@@ -14,6 +14,15 @@
   SCPT="setup-wifi.sh" # Script name
   SRVF="/etc/systemd/system/wifi-connect"
 
+# Become superuser (if needed)
+  bsu_f() {
+    if [[ "$EUID" != 0 ]]; then
+         echo "Requesting root privileges"
+         exec sudo bash $(readlink -f $0)
+         exit 1
+    fi
+  }
+
 # Log cleanup:
   lcl_f() {
     mkdir -p $(dirname ${LOGX})
@@ -265,6 +274,7 @@
   }
 
 # Start script: -----------------------------------------------------------------------------------
+  bsu_f # Become superuser
   lcl_f # Log cleanup
   swr_f # Set wifi rules
   ews_f # Enable wifi service
