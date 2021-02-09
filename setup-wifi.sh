@@ -70,41 +70,21 @@
   swr_f(){
     RULS="/etc/polkit-1/rules.d/20-network-manager-authenticate-modify.rules"
 
-    if   [[ $(ls "${RULS}" 2>/dev/null) ]]; then
-    #if   [ -f "${RULS}" ]; then
-         echo "  Wifi rules file found" | ptl_f
-         AUTH=$(grep AUTH_ADMIN "${RULS}"  | awk -F '.' '{print $3}' | sed 's/;//')
-         HNDL=$(grep NOT_HANDLED "${RULS}" | awk -F '.' '{print $3}' | sed 's/;//')
-         RLWC=$(cat "${RULS}" | wc -l)
+    echo "  Updating wifi rules file"
 
-         # Check if file is current:
-         if   [ "${AUTH}" == "AUTH_ADMIN" ] && [ "${HNDL}" == "NOT_HANDLED" ] \
-              && [ "${RLWC}" -eq 11 ]; then
-              echo "  Wifi rules file is current"
-         else urf_f
-         fi
-    else urf_f
-    fi
-  }
-
-# Pipe to rules file:
-  ptr_f(){ tee -a "${RULS}"; }
-
-# Create wifi rules file:
-  urf_f(){
-    echo -e "  Updating wifi rules file\n"
-    echo 'polkit.addRule(function(action, subject) {'                 | tee "${RULS}"
-    echo '    // Require admin authentication to configure networks'                       | ptr_f
-    echo '    if (action.id == "org.freedesktop.NetworkManager.settings.modify.system" ||' | ptr_f
-    echo '        action.id == "org.freedesktop.NetworkManager.settings.modify.own") {'    | ptr_f
-    echo '        if (subject.local && subject.active && subject.isInGroup("sudo")) {'     | ptr_f
-    echo '            return polkit.Result.YES;'                                           | ptr_f
-    echo '        }'                                                                       | ptr_f
-    echo '        return polkit.Result.AUTH_ADMIN;'                                        | ptr_f
-    echo '    }'                                                                           | ptr_f
-    echo '    return polkit.Result.NOT_HANDLED;'                                           | ptr_f
-    echo '});'                                                                             | ptr_f
-    echo ""
+    cat << EOF > ${RULS}
+polkit.addRule(function(action, subject) {
+    // Require admin authentication to configure networks
+    if (action.id == "org.freedesktop.NetworkManager.settings.modify.system" ||
+        action.id == "org.freedesktop.NetworkManager.settings.modify.own") {
+        if (subject.local && subject.active && subject.isInGroup("sudo")) {
+            return polkit.Result.YES;
+        }
+        return polkit.Result.AUTH_ADMIN;
+    }
+    return polkit.Result.NOT_HANDLED;
+});
+EOF
   }
 
 # Enable wifi service: ----------------------------------------------------------------------------
