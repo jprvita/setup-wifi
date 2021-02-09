@@ -15,7 +15,9 @@
   SRVF="/etc/systemd/system/wifi-connect"
 
 # Log cleanup:
-  if   [ -e "${HDIR}/${LOGX}" ]; then rm "${HDIR}/${LOGX}"; fi
+  lcl_f() {
+    if   [ -e "${HDIR}/${LOGX}" ]; then rm "${HDIR}/${LOGX}"; fi
+  }
 
 # Pipe to log:
   ptl_f(){ tee -a "${HDIR}/${LOGX}"; }
@@ -262,6 +264,7 @@
   }
 
 # Start script: -----------------------------------------------------------------------------------
+  lcl_f # Log cleanup
   swr_f # Set wifi rules
   ews_f # Enable wifi service
   swa_f # Set wifi action
