@@ -68,7 +68,7 @@
 
 # Set wifi rules: ---------------------------------------------------------------------------------
   swr_f(){
-    RULS="/etc/polkit-1/rules.d/10-wp-eos-wifi-admin-only.rules"
+    RULS="/etc/polkit-1/rules.d/20-network-manager-authenticate-modify.rules"
 
     if   [[ $(ls "${RULS}" 2>/dev/null) ]]; then
     #if   [ -f "${RULS}" ]; then
