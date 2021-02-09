@@ -15,10 +15,10 @@
   SRVF="/etc/systemd/system/wifi-connect"
 
 # Log cleanup:
-  if   [ -e "${HDIR}/${LOGX}" ]; then sudo rm "${HDIR}/${LOGX}"; fi
+  if   [ -e "${HDIR}/${LOGX}" ]; then rm "${HDIR}/${LOGX}"; fi
 
 # Pipe to log:
-  ptl_f(){ sudo tee -a "${HDIR}/${LOGX}"; }
+  ptl_f(){ tee -a "${HDIR}/${LOGX}"; }
 
 # User input (SSID/PSWD): -------------------------------------------------------------------------
   set_f(){
@@ -58,12 +58,12 @@
   swr_f(){
     RULS="/etc/polkit-1/rules.d/10-wp-eos-wifi-admin-only.rules"
 
-    if   [[ $(sudo ls "${RULS}" 2>/dev/null) ]]; then
+    if   [[ $(ls "${RULS}" 2>/dev/null) ]]; then
     #if   [ -f "${RULS}" ]; then
          echo "  Wifi rules file found" | ptl_f
-         AUTH=$(sudo grep AUTH_ADMIN "${RULS}"  | awk -F '.' '{print $3}' | sed 's/;//')
-         HNDL=$(sudo grep NOT_HANDLED "${RULS}" | awk -F '.' '{print $3}' | sed 's/;//')
-         RLWC=$(sudo cat "${RULS}" | wc -l)
+         AUTH=$(grep AUTH_ADMIN "${RULS}"  | awk -F '.' '{print $3}' | sed 's/;//')
+         HNDL=$(grep NOT_HANDLED "${RULS}" | awk -F '.' '{print $3}' | sed 's/;//')
+         RLWC=$(cat "${RULS}" | wc -l)
 
          # Check if file is current:
          if   [ "${AUTH}" == "AUTH_ADMIN" ] && [ "${HNDL}" == "NOT_HANDLED" ] \
@@ -76,12 +76,12 @@
   }
 
 # Pipe to rules file:
-  ptr_f(){ sudo tee -a "${RULS}"; }
+  ptr_f(){ tee -a "${RULS}"; }
 
 # Create wifi rules file:
   urf_f(){
     echo -e "  Updating wifi rules file\n"
-    echo 'polkit.addRule(function(action, subject) {'                 | sudo tee "${RULS}"
+    echo 'polkit.addRule(function(action, subject) {'                 | tee "${RULS}"
     echo '    // Require admin authentication to configure networks'                       | ptr_f
     echo '    if (action.id == "org.freedesktop.NetworkManager.settings.modify.system" ||' | ptr_f
     echo '        action.id == "org.freedesktop.NetworkManager.settings.modify.own") {'    | ptr_f
@@ -102,7 +102,7 @@
     elif [ -e "${SRVF}.service" ]; then
          echo "  Wifi service file found, but not not current rev" | ptl_f
          dis_f   # Disable service
-         sudo rm "${SRVF}.service"
+         rm "${SRVF}.service"
          csf_f   # Generate service file
          esf_f   # Enable service file
     else echo "  Wifi service file NOT found" | ptl_f
@@ -115,22 +115,22 @@
   dis_f(){
     if   [ $(systemctl is-active nginx) == "active" ]; then
          echo "  Temporarilly disabeling wifi-connect service" | ptl_f
-         sudo systemctl stop wifi-connect
+         systemctl stop wifi-connect
     fi
-    if   [[ $(sudo systemctl is-enabled wifi-connect) == "enabled" ]]; then
-         sudo systemctl disable    wifi-connect
-         sudo systemctl daemon-reload
+    if   [[ $(systemctl is-enabled wifi-connect) == "enabled" ]]; then
+         systemctl disable    wifi-connect
+         systemctl daemon-reload
     fi
   }
 
 # Pipe to service file:
-  pts_f(){ sudo tee -a "${SRVF}.service"; }
+  pts_f(){ tee -a "${SRVF}.service"; }
 
 # Generate service file:
   csf_f(){
     echo "  Generating service file" | ptl_f
     echo ""
-    echo "[Unit]" | sudo tee "${SRVF}.service"
+    echo "[Unit]" | tee "${SRVF}.service"
     echo "Description=WiFi Connect"              | pts_f
     echo ""                                      | pts_f
     echo "[Service]"                             | pts_f
@@ -146,7 +146,7 @@
   css_f(){
     if   [ ! -e "${HDIR}/${SCPT}" ]; then
          echo "  Copying service script ${SCPT} to dir: ${HDIR}" | ptl_f
-         sudo cp "${SCPT}" "${HDIR}"/
+         cp "${SCPT}" "${HDIR}"/
     else echo "  Service script ${SCPT} found: ${HDIR}" | ptl_f
     fi
   }
@@ -154,16 +154,16 @@
 # Enable service file:
   esf_f(){
     echo "  Enabeling wifi-connect service" | ptl_f
-    sudo systemctl enable wifi-connect
-    sudo systemctl daemon-reload
-    sudo systemctl start  wifi-connect
-    sudo /etc/init.d/network-manager restart
+    systemctl enable wifi-connect
+    systemctl daemon-reload
+    systemctl start  wifi-connect
+    /etc/init.d/network-manager restart
     sleep 1s
   }
 
 # Test enabled service:
   tws_f(){
-    STAT=$(sudo systemctl is-enabled wifi-connect)
+    STAT=$(systemctl is-enabled wifi-connect)
 
     if   [ "${STAT}" == "enabled" ]; then
          echo "  Service wifi service enabled"   | ptl_f
@@ -182,14 +182,14 @@
          exit 0;
     else pre_f # User sets SSID/PSWD
          echo "  Finalized - SSID: ${SSID} | PSWD: ${PSWD}" | ptl_f
-         sudo bash -c "echo ${SSID} ${PSWD} > ${HDIR}/${CRED}"
+         echo "${SSID} ${PSWD}" > ${HDIR}/${CRED}
     fi;  wfd_f # Delete wifi connections
   }
 
 # Pipe final SSID/PSWD to creds file & log:
   pfc_f(){
     echo "  Finalized - SSID: ${SSID} | PSWD: ${PSWD}" | ptl_f
-    echo "${SSID} ${PSWD}" | sudo tee "${HDIR}"/"${CRED}"
+    echo "${SSID} ${PSWD}" | tee "${HDIR}"/"${CRED}"
   }
 
 # Get SSID/PSWD from tmp file:
@@ -208,7 +208,7 @@
   wdl_f(){
     if   [ -e "${HDIR}/${CRED}" ]; then
          echo "  Deleting SSID/PSWD file: ${CRED}" | ptl_f
-         sudo rm "${HDIR}/${CRED}"
+         rm "${HDIR}/${CRED}"
     fi
   }
 
@@ -217,8 +217,8 @@
     NMNG=$(ls /etc/NetworkManager/system-connections | wc -l)
     if   [ "${NMNG}" -gt "0" ]; then
          echo "  Deleting legacy wifi connections"        | ptl_f
-         sudo rm /etc/NetworkManager/system-connections/* | ptl_f
-         sudo service network-manager restart             | ptl_f
+         rm /etc/NetworkManager/system-connections/* | ptl_f
+         service network-manager restart             | ptl_f
     else echo "  No legacy wifi connections found"        | ptl_f
     fi
   }
@@ -226,12 +226,12 @@
 # Connect to wifi:
   con_f(){
     sleep 10s
-    CNFM=$(sudo nmcli dev wifi | grep " ${SSID} " | awk '{print $1}' | head -n1)
+    CNFM=$(nmcli dev wifi | grep " ${SSID} " | awk '{print $1}' | head -n1)
     echo "  Confirm SSID detection: ${CNFM}" | ptl_f
 
     if   [ ! -z "${CNFM}" ]; then
          echo "  Connecing to SSID: ${SSID}" | ptl_f
-         sudo nmcli dev wifi connect "${SSID}" password "${PSWD}" > /dev/null 2>&1
+         nmcli dev wifi connect "${SSID}" password "${PSWD}" > /dev/null 2>&1
          sleep 2s
          STAT=$(ls /etc/NetworkManager/system-connections/ | grep "${SSID}".nmconnection)
 
@@ -257,7 +257,7 @@
 
     if   [ -e "${WIFF}" ]; then
          echo "  Deleting down-rev service file: ${WIFF}" | ptl_f
-         sudo rm "${WIFF}"
+         rm "${WIFF}"
     fi
   }
 
