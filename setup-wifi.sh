@@ -159,7 +159,7 @@ EOF
 
     if   [ "${STAT}" == "enabled" ]; then
          echo "  Service wifi service enabled"   | ptl_f
-    else echo "  Enabele and start wifi service" | ptl_f
+    else echo "  Enable and start wifi service"  | ptl_f
          esf_f
     fi
   }
