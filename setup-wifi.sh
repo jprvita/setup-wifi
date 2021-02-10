@@ -178,12 +178,6 @@ EOF
     fi;  wfd_f # Delete wifi connections
   }
 
-# Pipe final SSID/PSWD to creds file & log:
-  pfc_f(){
-    echo "  Finalized - SSID: ${SSID} | PSWD: ${PSWD}" | ptl_f
-    echo "${SSID} ${PSWD}" | tee "${HDIR}"/"${CRED}"
-  }
-
 # Get SSID/PSWD from tmp file:
   get_f(){
     SSID=$(cat "${HDIR}"/"${CRED}" | awk '{print $1}')
